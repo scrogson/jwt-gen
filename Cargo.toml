@@ -1,5 +1,5 @@
 [package]
-name = "jwt"
+name = "jwt_gen"
 version = "0.1.0"
 authors = ["Sonny Scroggin <sonny@scrogg.in>"]
 
