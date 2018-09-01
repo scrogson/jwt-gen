@@ -6,7 +6,7 @@ needs.
 
 ## TODO
 
-- [ ] Add CLI options instead of environment variables
+- [x] Add CLI options instead of environment variables
 - [ ] Make algorithm configurable
 - [ ] Support RSA public key signing/verification
 - [ ] Custom derive to encode/decode claims
