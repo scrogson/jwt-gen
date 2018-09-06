@@ -31,6 +31,24 @@ OPTIONS:
 
 Not implemented yet.
 
+## Generating private/public key for RS algorithms:
+
+### RS256
+
+```
+ssh-keygen -t rsa -b 2048 -f RS256.key
+# Don't add passphrase
+openssl rsa -in RS256.key -pubout -outform PEM -out RS256.pub
+```
+
+### RS512
+
+```
+ssh-keygen -t rsa -b 4096 -f RS512.key
+# Don't add passphrase
+openssl rsa -in RS512.key -pubout -outform PEM -out RS512.pub
+```
+
 ## TODO
 
 - [x] Add CLI options instead of environment variables
