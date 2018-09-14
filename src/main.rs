@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate failure;
 extern crate rustwt;
 #[macro_use]
@@ -9,7 +8,7 @@ use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use failure::Error;
-use rustwt::{Algorithm, Encoder, Payload, Value, Number};
+use rustwt::{Algorithm, Decoder, Encoder, Payload, Value, Number};
 use Algorithm::*;
 use structopt::StructOpt;
 use uuid::Uuid;
@@ -65,6 +64,15 @@ enum Options {
 
     #[structopt(name = "decode")]
     Decode {
+        #[structopt(long = "key", short = "k", env = "KEY")]
+        /// The secret key which is used to sign the token.
+        ///
+        /// In the case for HMAC based tokens, this should be a raw secret.
+        /// In the case for RS/EC algorithms, a file path to the private key
+        /// is expected.
+        key: String,
+
+        token: String,
     }
 }
 
@@ -116,11 +124,9 @@ fn main() -> Result<(), Error> {
             payload.insert("jti".to_string(), Value::String(jti.to_string()));
             payload.insert("nbf".to_string(), Value::Number(Number::from(nbf)));
 
-            let key = if alg.requires_file_path() {
-                fs::canonicalize(key).and_then(|path| fs::read_to_string(path))?
-            } else {
-                key
-            };
+            let key = fs::canonicalize(&key)
+                .and_then(|path| fs::read_to_string(path))
+                .unwrap_or(key);
 
             let encoder = Encoder::from_raw_private_key(&key, alg)?;
             let token = encoder.encode(payload)?;
@@ -128,8 +134,20 @@ fn main() -> Result<(), Error> {
             println!("{}", token);
         },
 
-        Options::Decode { .. } => {
-            return Err(format_err!("decode is not yet implemented"));
+        Options::Decode { key, token } => {
+            let decoder = match fs::canonicalize(&key) {
+                Ok(path) => {
+                    match fs::read_to_string(path) {
+                        Ok(contents) => Decoder::from_pem(&contents),
+                        Err(_) => Err(rustwt::Error::JWTInvalid)
+                    }
+                },
+                Err(_) => Decoder::from_hmac_secret(&key)
+            }?;
+
+            let (_header, payload) = decoder.decode(token)?;
+
+            println!("{:#?}", payload);
         },
     };
 

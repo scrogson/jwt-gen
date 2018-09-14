@@ -53,5 +53,5 @@ openssl rsa -in RS512.key -pubout -outform PEM -out RS512.pub
 
 - [x] Add CLI options instead of environment variables
 - [x] Make algorithm configurable
-- [ ] Support RSA public key signing/verification
+- [x] Support RSA public key signing/verification
 - [ ] Custom derive to encode/decode claims
